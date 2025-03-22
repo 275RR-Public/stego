@@ -1,5 +1,6 @@
 import json
 from google.cloud import storage
+from io import BytesIO
 
 def upload_image(client, bucket_name, file, filename):
     """Upload an image to GCS and return its public URL."""
@@ -28,3 +29,13 @@ def get_image_urls(client, bucket_name, json_filename="image_list.json"):
         data = json.loads(blob.download_as_string())
         return data
     return []
+
+def download_image(client, bucket_name, url):
+    """Download an image from GCS given its public URL and return its bytes."""
+    blob_name = url.split('/')[-1]
+    bucket = client.bucket(bucket_name)
+    blob = bucket.blob(blob_name)
+    if blob.exists():
+        return BytesIO(blob.download_as_bytes())
+    else:
+        raise ValueError(f"Image not found in bucket: {blob_name}")
