@@ -1,6 +1,7 @@
 import json
 from google.cloud import storage
 from io import BytesIO
+from urllib.parse import unquote
 
 def upload_image(client, bucket_name, file, filename):
     """Upload an image to GCS and return its public URL."""
@@ -31,8 +32,7 @@ def get_image_urls(client, bucket_name, json_filename="image_list.json"):
     return []
 
 def download_image(client, bucket_name, url):
-    """Download an image from GCS given its public URL and return its bytes."""
-    blob_name = url.split('/')[-1]
+    blob_name = unquote(url.split('/')[-1])  # Decode URL-encoded char
     bucket = client.bucket(bucket_name)
     blob = bucket.blob(blob_name)
     if blob.exists():
