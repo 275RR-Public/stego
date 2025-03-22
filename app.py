@@ -38,7 +38,6 @@ with st.sidebar:
     st.write("If you need to Reset the app, click the dots ( **⋮** ) in the top-right and select ReRun.")
     st.markdown('######')   # add empty space
     st.markdown("#### Tips")
-    st.markdown("#### Tips")
     st.write("1. Insert a message. The start bit (S) controls where to begin embedding,"
     " and the mode (C) controls the step between changes. To minimize visual impact,"
     " especially in solid-color images, modify the least significant bits (LSBs)."
