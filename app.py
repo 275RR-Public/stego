@@ -160,7 +160,6 @@ if st.experimental_user.is_logged_in:
             else:
                 st.info("No images uploaded yet.")
 
-
 # Display images (accessible to everyone)
 if st.experimental_user.is_logged_in is False:
     image_urls = bucket.get_image_urls(client, bucket_name)
