@@ -1,5 +1,14 @@
-# Stego on Streamlit
+# Image Steganography on Streamlit
 
+*Steganography is the practice of concealing an object within another object, making the presence of the hidden object imperceptible to an unsuspecting observer.*
+
+In our example, we are hiding an ASCII message in a PNG image.
+
+## Public Website
+
+Visit at https://imgstego.streamlit.app/
+
+Requirements:
 1. Allow anyone to view stego images.
 2. After login, allow user to create stego images.
 
