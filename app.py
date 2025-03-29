@@ -5,6 +5,7 @@ from google.cloud import storage
 import bucket
 import stego
 from urllib.parse import unquote
+import re
 
 # Cache the GCS client for performance
 @st.cache_resource
@@ -15,7 +16,7 @@ def get_gcs_client():
 client = get_gcs_client()
 bucket_name = st.secrets["app_data"]["bucket_name"]
 
-# Sidebar for authentication
+# Sidebar for authentication and information
 with st.sidebar:
     st.title("Image Steganography")
     st.markdown('##')   # add empty space
@@ -64,22 +65,33 @@ if st.experimental_user.is_logged_in:
             st.markdown('######')   # add empty space
             st.markdown("#### Step 2b: Add a Message to insert and set S, C")
             with st.form("insert_form", clear_on_submit=True, enter_to_submit=False):
-                M = st.text_input("Message (M)", placeholder="string")
+                M = st.text_input("Message (M)", placeholder="string (A-Z, a-z, 0-9, space, !, comma, period only)")
                 col1, col2 = st.columns(2)
                 with col1:
-                    S = st.text_input("Start bit (S)", placeholder="int")
+                    S = st.text_input("Start bit (S)", placeholder="non-negative int")
                 with col2:
-                    C = st.text_input("Mode (C)", placeholder="int or list of int (eg 8 or 8,16,24)")
+                    C = st.text_input("Mode (C)", placeholder="positive int or list of int (eg 8 or 8,16,24)")
                 pad1, col, pad2 = st.columns([1,1,1])
                 with col:
                     submit = st.form_submit_button("Create", use_container_width=True)
                 if submit:
                     try:
-                        S = int(S)
-                        C = [int(c.strip()) for c in C.split(',')]
-                    except ValueError:
-                        st.toast("Invalid input for S or C. Enter int (C as comma-separated list).", icon="⚠️")
+                        if not re.match(r'^[A-Za-z0-9,!. ]*$', M):
+                            raise ValueError("Message can only contain A-Z, a-z, 0-9, space, !, comma, period")
+                        if not M.strip():
+                            raise ValueError("Message cannot be empty")
+                    
+                        S = int(S.strip())
+                        if S < 0:
+                            raise ValueError("S must be non-negative")
+                        
+                        C = [int(c.strip()) for c in C.split(',') if c.strip()]
+                        if not C or any(c < 1 for c in C):
+                            raise ValueError("C must be positive integers")
+                    except ValueError as ve:
+                        st.toast(f"{str(ve)}", icon="⚠️")
                         st.stop()
+                    
                     try:
                         modified_img = stego.embed_in_png(uploaded_file, M.encode(), S, C)
                         st.toast("Message embedded successfully!")
@@ -120,11 +132,17 @@ if st.experimental_user.is_logged_in:
             if submit:
                 if st.session_state.selected:
                     try:
-                        S = int(S)
-                        C = [int(c.strip()) for c in C.split(',')]
-                        M_len = int(M_len)
-                    except ValueError:
-                        st.toast("Invalid input. Enter int (C as comma-separated list).", icon="⚠️")
+                        S = int(S.strip())
+                        if S < 0:
+                            raise ValueError("S must be non-negative")
+                        C = [int(c.strip()) for c in C.split(',') if c.strip()]
+                        if not C or any(c < 1 for c in C):
+                            raise ValueError("C must be positive integers")
+                        M_len = int(M_len.strip())
+                        if M_len < 1:
+                            raise ValueError("M_len must be positive")
+                    except ValueError as ve:
+                        st.toast(f"{str(ve)}", icon="⚠️")
                         st.stop()
                     image_bytes = bucket.download_image(client, bucket_name, st.session_state.selected)
                     msg = stego.extract_from_png(image_bytes, S, C, M_len * 8)
