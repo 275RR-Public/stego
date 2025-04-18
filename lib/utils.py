@@ -6,9 +6,15 @@ import lib.bucket as bucket
 
 client = get_gcs_client()
 
-def hide_on_click():
-    # Toggle button visibility on click
-    st.session_state.clicked = not st.session_state.clicked
+def toggle_show_download(key_id):
+    # Initialize the set if it doesn't exist
+    if "show_download_for" not in st.session_state:
+        st.session_state.show_download_for = set()
+    # Toggle the key_id in the set
+    if key_id in st.session_state.show_download_for:
+        st.session_state.show_download_for.remove(key_id)
+    else:
+        st.session_state.show_download_for.add(key_id)
 
 def display_keys_with_delete(keys, key_type):
     """
@@ -58,35 +64,38 @@ def display_keys_with_delete(keys, key_type):
                 with col1:
                     st.code(f"RSA-2048: {key_id}", language=None)
                 with col2:
-                    if not st.session_state.clicked:
-                        st.button("Download", key=f"download_asym_{key_id}", use_container_width=True, on_click=hide_on_click)
-                    if st.session_state.clicked:
-                        # Fetch public and private key data
+                    # Ensure show_download_for is initialized
+                    if "show_download_for" not in st.session_state:
+                        st.session_state.show_download_for = set()
+                    if key_id in st.session_state.show_download_for:
+                        # Show download buttons for private and public keys
                         public_key_data = bucket.download_file(client, st.session_state.bucket_name, public_key_file)
                         private_key_data = bucket.download_file(client, st.session_state.bucket_name, private_key_file)
                         
-                        # Trigger download for private key
                         st.download_button(
                             label="Download Private Key",
                             data=private_key_data,
                             file_name=f"private_key_{key_id}.enc",
                             mime="application/octet-stream",
-                            key=f"download_private_{key_id}",
-                            on_click=hide_on_click
+                            key=f"download_private_{key_id}"
                         )
-                        # Trigger download for public key
                         st.download_button(
                             label="Download Public Key",
                             data=public_key_data,
                             file_name=f"public_key_{key_id}.pem",
                             mime="application/octet-stream",
-                            key=f"download_public_{key_id}",
-                            on_click=hide_on_click
+                            key=f"download_public_{key_id}"
                         )
+                    else:
+                        # Show "Download" button to toggle visibility
+                        st.button("Download", key=f"download_asym_{key_id}", use_container_width=True, on_click=lambda kid=key_id: toggle_show_download(kid))
                 with col3:
                     if st.button("Delete", key=f"delete_asym_{key_id}", use_container_width=True):
                         bucket.delete_file(client, st.session_state.bucket_name, public_key_file)
                         bucket.delete_file(client, st.session_state.bucket_name, private_key_file)
+                        # Clean up session state
+                        if "show_download_for" in st.session_state and key_id in st.session_state.show_download_for:
+                            st.session_state.show_download_for.remove(key_id)
                         st.toast(f"Asymmetric key {key_id} deleted.", icon=":material/delete:")
                         st.rerun()
     else:

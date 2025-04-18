@@ -17,8 +17,6 @@ if "file_uploaded" not in st.session_state:
     st.session_state.file_uploaded = False
 if "hash_info" not in st.session_state:
     st.session_state.hash_info = None
-if 'clicked' not in st.session_state:
-    st.session_state.clicked = False
 
 with st.sidebar:
     st.write("Cryptography Tips:")
