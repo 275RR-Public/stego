@@ -6,16 +6,9 @@ import lib.bucket as bucket
 
 client = get_gcs_client()
 
-# Initialize session state for controlling the visibility
-if 'clicked' not in st.session_state:
-    st.session_state.clicked = False
-
 def hide_on_click():
     # Toggle button visibility on click
-    if st.session_state.clicked == False:
-        st.session_state.clicked = True
-    else:
-        st.session_state.clicked = False
+    st.session_state.clicked = not st.session_state.clicked
 
 def display_keys_with_delete(keys, key_type):
     """
