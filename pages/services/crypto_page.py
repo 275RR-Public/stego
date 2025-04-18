@@ -327,7 +327,7 @@ with tab5:
                 }
 
         st.markdown('######')   # add empty space
-        if 'hash_info' in st.session_state:
+        if st.session_state.hash_info is not None:
             st.text_input(
                 f'Computed Hash for "{os.path.basename(st.session_state.hash_info['file'])}" with {st.session_state.hash_info['algorithm']}',
                 value=st.session_state.hash_info['hash'],
