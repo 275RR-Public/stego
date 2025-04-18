@@ -4,8 +4,8 @@ from google.cloud import storage
 # std lib
 import os, base64
 # app lib
-import lib.bucket as bucket
-import lib.crypto as crypto
+from lib import bucket
+from lib import crypto
 
 # Init global GCS client and cache for performance
 @st.cache_resource
