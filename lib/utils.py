@@ -12,7 +12,7 @@ if 'clicked' not in st.session_state:
 
 def hide_on_click():
     # Toggle button visibility on click
-    st.session_state.clicked = ~st.session_state.clicked
+    st.session_state.clicked = not st.session_state.clicked
 
 def display_keys_with_delete(keys, key_type):
     """
